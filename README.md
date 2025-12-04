@@ -3,6 +3,13 @@ Python tool to reduce size and redundancy of phylogenetic datasets
 
 Here you find the software, the data and scripts used in the manuscript (Influenza_data, MTB_data and stochastic_component), and a short tutorial on fine tuning the behaviour of Treemmer with the pruning options.
 
+Tim Dallman - 04.12.25
+Implemented two modifcations
+
+I have modified the default behaviour to only consider nodes that only consider "sibling" or "daughter" pairs but not "grandparent nodes" to maintain internal bifuracations to better reflect extant diviersity
+
+Modified behaviour so that if you provide meta-data will only remove pairs with the same tag - i.e. country to preserve signals of cross-country transmission.
+
 ## Installation
 
 From version 0.3 Treemmer is compatible with both python 2 and python 3 
@@ -54,6 +61,12 @@ Prune tree down to 100 tips.
 
 ```
 python3 Treemmer_v0.3.py tree_file.nwk -X 100
+```
+
+Use meta data file
+
+```
+python3 Treemmer_v0.3.py tree_file.nwk -X 100 -lm meta.csv
 ```
 
 ## Citation
