@@ -6,7 +6,7 @@ Here you find the software, the data and scripts used in the manuscript (Influen
 Tim Dallman - 04.12.25
 Implemented two modifcations
 
-I have modified the default behaviour to only consider nodes that only consider "sibling" or "daughter" pairs but not "grandparent nodes" to maintain internal bifuracations to better reflect extant diviersity
+I have modified the default behaviour to only consider nodes that are defined as "sibling" or "daughter" pairs but not "grandparent nodes" to maintain internal bifuracations to better reflect extant diviersity
 
 Modified behaviour so that if you provide meta-data will only remove pairs with the same tag - i.e. country to preserve signals of cross-country transmission.
 
