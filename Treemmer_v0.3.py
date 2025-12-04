@@ -52,78 +52,120 @@ def restricted_float(x):
 
 ##########################################			FIND LEAVES NEIGHBORS OF A LEAF (2 NODE OF DISTANCE MAX) and calc DISTANCE			#######################	
 
-def find_N(t,leaf):
-	dlist ={}
-	parent= leaf.up
-	dist_parent=leaf.dist
-	flag=0
+##########################################      FIND LEAF NEIGHBOURS & DISTANCE       #######################
 
-	if arguments.verbose==3:
-		print ("leaf findN at iteration:	" + str(counter))
-		print (leaf)
-		print ("parent findN at iteration:	" + str(counter))
-		print (parent)
-		print (parent.get_children())
+def find_N(t, leaf):
+    dlist = {}
+    parent = leaf.up
+    dist_parent = leaf.dist
+    flag = 0
 
-	sister_flag=0
-	for n in range(0,len(parent.get_children())):				##this for loop start from parent and climb up max two nodes, if it finds leaves calculate the distances, 
-		if parent.is_root():
-			flag=1
-		#	break			#this  would stuck the algorithm into a infinite loop when the  root is  polytomy
-		if arguments.verbose==3:							
-			print ("children	" + str(n))
-			print (parent.children[n])
-					
-		if (parent.children[n].is_leaf()):						# search at one node of distance
-			if (parent.children[n] != leaf):
-				DIS = leaf.get_distance(parent.children[n])
-				dlist.update({leaf.name + "," +parent.children[n].name : DIS})
-				flag=flag+1
-				if arguments.verbose==3:
-					print (leaf.name + "," +parent.children[n].name + str(DIS) + "have one node of distance")
-		else:	
-			if flag == 0:									
-				if arguments.verbose==3:					#going up, search at two nodes of distance
-					print ("going up, brother is node")
-				
-				temp_dlist={}
-				for nn in range(0,len(parent.children[n].get_children())):
-					if (parent.children[n].children[nn].is_leaf()):
-						DIS = leaf.get_distance(parent.children[n].children[nn])
-						temp_dlist.update({leaf.name + "," +parent.children[n].children[nn].name : DIS})
-						sister_flag=sister_flag +1
-					
-				
-	if ((sister_flag==1) and (flag==0)):						#collect results at two nodes of distance only if there are no leaves that are closer
-		dlist.update(temp_dlist)
-		if arguments.verbose==3:
-			print (str(temp_dlist) + "	are not sister taxa, but neighbours first is leaf, second is upper neighbor")
+    if arguments.verbose == 3:
+        print("leaf findN at iteration:    " + str(counter))
+        print(leaf)
+        print("parent findN at iteration:  " + str(counter))
+        print(parent)
+        print(parent.get_children())
 
+    sister_flag = 0
+    for n in range(0, len(parent.get_children())):  # start from parent and climb up max 2 nodes
+        if parent.is_root():
+            flag = 1
+        if arguments.verbose == 3:
+            print("children   " + str(n))
+            print(parent.children[n])
 
-	
-	if (flag == 0):			#### this means that the leaf has no neighbors at one node of dist
-		parent=parent.up 		#### therefore I climb the tree down towards the root of one more step and look for leaves
-		multi_flag=0
-		if arguments.verbose==3:
-			print ("going down")		
-			print ("gran parent")		
-			print (parent)
-		temp_dlist={}
-		for n in range(0,len(parent.get_children())):		#this for loop start from gran parent and climb up max one nodes, if it finds leaves calculate the distances, 
-			if parent.is_root():
-				break										
-			if (parent.children[n].is_leaf()):
-				DIS = leaf.get_distance(parent.children[n])
-				multi_flag = multi_flag+1
-				temp_dlist.update({leaf.name + "," +parent.children[n].name : DIS})
-		if multi_flag==1:					# this is to deal with polytomies 
-			dlist.update(temp_dlist)
-			if arguments.verbose==3:
-				print (leaf.name + "," +parent.children[n].name + str(DIS) + "	are not sister taxa, but neighbours first is leaf, second is neighbor of downstair (towards root)")
-	
-	return (dlist)
+        child = parent.children[n]
+
+        if child.is_leaf():  # search at one node of distance
+            if child != leaf:
+                # *** NEW: only consider pair if they share a metadata tag ***
+                if same_meta_tag(leaf.name, child.name):
+                    DIS = leaf.get_distance(child)
+                    dlist[leaf.name + "," + child.name] = DIS
+                    flag = flag + 1
+                    if arguments.verbose == 3:
+                        print(leaf.name + "," + child.name + str(DIS) + " have one node of distance")
+        else:
+            if flag == 0:
+                if arguments.verbose == 3:
+                    print("going up, brother is node")
+
+                temp_dlist = {}
+                for nn in range(0, len(child.get_children())):
+                    gchild = child.children[nn]
+                    if gchild.is_leaf():
+                        # *** NEW: only consider pair if they share a metadata tag ***
+                        if same_meta_tag(leaf.name, gchild.name):
+                            DIS = leaf.get_distance(gchild)
+                            temp_dlist[leaf.name + "," + gchild.name] = DIS
+                            sister_flag = sister_flag + 1
+
+    # collect results at two nodes of distance only if there are no leaves that are closer
+    #if (sister_flag == 1) and (flag == 0):
+    #    dlist.update(temp_dlist)
+    #    if arguments.verbose == 3:
+    #        print(str(temp_dlist) + "  are not sister taxa, but neighbours first is leaf, second is upper neighbor")
+
+    # if the leaf has no neighbors at one node of dist
+    #if flag == 0:
+    #    parent = parent.up
+    #    multi_flag = 0
+    #    if arguments.verbose == 3:
+    #        print("going down")
+    #        print("gran parent")
+    #        print(parent)#
+
+    #    temp_dlist = {}
+    #    for n in range(0, len(parent.get_children())):
+    #        if parent.is_root():
+    #            break
+
+    #       child = parent.children[n]
+    #       if child.is_leaf():
+    #            # *** NEW: only consider pair if they share a metadata tag ***
+    #            if same_meta_tag(leaf.name, child.name):
+    #                DIS = leaf.get_distance(child)
+    #                multi_flag = multi_flag + 1
+    #                temp_dlist[leaf.name + "," + child.name] = DIS
+
+        # this is to deal with polytomies
+     #   if multi_flag == 1:
+     #       dlist.update(temp_dlist)
+     #       if arguments.verbose == 3:
+     #           # note: child here is last in the loop, but content already in temp_dlist
+     #           print(leaf.name + "," + child.name + str(DIS) + "  are not sister taxa, but neighbours first is leaf, second is neighbor of downstair (towards root)")
+
+    return dlist
+
 		
+
+
+##########################################     SAME META TAG?      #######################
+
+def same_meta_tag(name1, name2):
+    """
+    Return True iff both leaves share at least one metadata tag.
+    Requires -lm to be used so that dict_meta is defined.
+    """
+    if not arguments.list_meta:
+        # No metadata file given: do not restrict by tag
+        return True
+
+    # dict_meta may be a normal dict or defaultdict(list), so use .get
+    tags1 = set(dict_meta.get(name1, []))
+    tags2 = set(dict_meta.get(name2, []))
+
+    # Only accept pairs where BOTH leaves have at least one tag
+    # and they share at least one tag
+    if not tags1 or not tags2:
+        return False
+
+    return bool(tags1.intersection(tags2))
+
+
 ##########################################				Check if leaf is protected			#######################
+
 
 def check_protected(leaf_to_prune):
 	
@@ -334,19 +376,37 @@ def write_stop(t,output1,output2):
 
 ##########################################		read list leaf_name,tag		#######################
 
-def read_list_meta (path_to_list_meta):
+##########################################      read list leaf_name,tag      #######################
 
-	dict_meta = defaultdict(list)
-	with open(path_to_list_meta, 'r') as f:
-		reader = csv.reader(f)
-		list_meta = list(reader)
-	list_meta=filter(None, list_meta)
-   		 
-	for taxa_name, tag in list_meta:	
-		dict_meta[taxa_name].append(tag)
+##########################################      read list leaf_name,tag      #######################
+
+def read_list_meta(path_to_list_meta):
+    dict_meta = defaultdict(list)
+    with open(path_to_list_meta, 'r') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            # Skip completely empty lines
+            if not row:
+                continue
+
+            # Skip rows that don't have at least 2 columns
+            if len(row) < 2:
+                # Optionally: print a warning if you want to debug bad lines
+                # print("Skipping malformed metadata row:", row)
+                continue
+
+            taxa_name = row[0].strip()
+            tag = row[1].strip()
+
+            # Skip if either is empty after stripping
+            if not taxa_name or not tag:
+                continue
+
+            dict_meta[taxa_name].append(tag)
+
+    return dict_meta
 
 
-	return (dict_meta)
 
 ##########################################		read list tag,number 	#######################
 
@@ -506,6 +566,8 @@ y=[]
 counter =0
 output=[]
 stop=0
+rel_TL = 1.0   # ensure defined even if no pruning occurs
+
 TOT_TL=calculate_TL(t)
 ori_length = len(t)
 output.append ('1	' + str(len(t))) 			#append first point to the output with RTL = 1 (before starting pruning)################################
@@ -541,7 +603,6 @@ while (len(t) > 3):								#################### Main loop ######################
 		result.update(d)
 
 	DLIST=result
-
 	if arguments.verbose > 1:
 		print (DLIST)
 		print ("\npruning\n")
